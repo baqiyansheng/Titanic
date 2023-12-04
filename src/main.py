@@ -4,6 +4,7 @@ from sklearn.linear_model import LogisticRegression
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib as mpl
+import csv
 data_train=pd.read_csv("./train.csv")
 data_test=pd.read_csv("./test.csv")
  
@@ -18,14 +19,12 @@ plt.show()
 bins = [0,6, 12, 20,39,59,100]
 group_names = ['infant', 'child', 'teen',"prime","middle","old"]
 data_train['categories'] = pd.cut(data_train['Age'], bins, labels = group_names)
-mpl.rcParams['font.family']='DFKai-SB' # 修改了全局变量
 plt.style.use('grayscale')
 s_pclass= data_train['Survived'].groupby(data_train['categories'])
 s_pclass = s_pclass.value_counts().unstack()
 fig = s_pclass.plot(kind='bar',stacked = True, colormap='tab20c',title='mortality rate of age',fontsize=20)
 fig.axes.title.set_size(20)
 plt.show()
-mpl.rcParams['font.family']='DFKai-SB' # 修改了全局变量
 plt.style.use('grayscale')
 s_pclass= data_train['Survived'].groupby(data_train['Pclass'])
 s_pclass = s_pclass.value_counts().unstack()
@@ -34,6 +33,7 @@ s_sex = s_sex.value_counts().unstack()
 fig = s_sex.plot(kind='bar',stacked = True, colormap='tab20c',title=' mortality rate of sex',fontsize=20)
 plt.show()
 fig = s_pclass.plot(kind='bar',stacked = True, colormap='tab20c',title='mortality rate of pclass',fontsize=20)
+plt.show()
 fig.axes.title.set_size(20)
 fig,ax = plt.subplots(1,2, figsize = (9,4))
 sns.violinplot(x="Pclass",y="Age",hue="Survived",data=data_train_age,split=True,ax=ax[0])
@@ -48,7 +48,7 @@ plt.show()
 sns.countplot(x='Parch',hue='Survived',data=data_train)
 plt.show()
  
-data_train['Age']=data_train['Age'].fillna(data_train['Age'].median())#用年龄的中位数填充年龄空值
+data_train['Age']=data_train['Age'].fillna(data_train['Age'].mean())#用年龄的平均数填充年龄空值
 data_train['Embarked']=data_train['Embarked'].fillna('S')#Embarked缺失值用最多的‘S’进行填充
  
 data_train.describe()
@@ -82,3 +82,9 @@ test_predictors=data_test[test_features]#构造测试集的survived列
 data_test['Survived']=LogRegAlg.predict(test_predictors)
 print('对测试人员的预测：')
 print(data_test)
+
+with open('./result/predict.csv', 'w', encoding='utf-8', newline='') as f:
+    writer = csv.writer(f)
+    writer.writerow(['PassengerId','Survived'])
+    for i in range(0,data_test.shape[0]):
+        writer.writerow([data_test['PassengerId'][i],data_test['Survived'][i]])
